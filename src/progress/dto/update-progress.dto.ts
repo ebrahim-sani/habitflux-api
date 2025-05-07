@@ -11,7 +11,7 @@ import { ProgressDataDto, ProgressType } from './create-progress.dto';
 export class UpdateProgressPayloadDto {
   @IsOptional()
   @IsEnum(ProgressType)
-  type?: ProgressType;
+  challenge_type?: ProgressType;
 
   @IsOptional()
   @IsDateString()

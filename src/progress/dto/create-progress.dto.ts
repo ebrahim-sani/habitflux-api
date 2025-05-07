@@ -10,7 +10,7 @@ import {
 import { Type } from 'class-transformer';
 
 export enum ProgressType {
-  NIGHTY_CHALLENGE = 'nighty',
+  NIGHTY_CHALLENGE = 'ninety',
   THIRTY_DAY = 'thirty',
   REPLACEMENT = 'replacement',
 }
@@ -66,7 +66,7 @@ export class ProgressDataDto {
 export class ProgressPayloadDto {
   @IsNotEmpty()
   @IsEnum(ProgressType)
-  type: ProgressType;
+  challenge_type: ProgressType;
 
   @IsNotEmpty()
   @IsDateString()

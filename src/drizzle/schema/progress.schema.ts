@@ -11,8 +11,8 @@ import { sql } from 'drizzle-orm';
 import { challenges } from './challenge.schema';
 
 // Progress type enum
-export const progressTypeEnum = pgEnum('type', [
-  'nighty',
+export const progressTypeEnum = pgEnum('challenge_type', [
+  'ninety',
   'thirty',
   'replacement',
 ]);
@@ -23,7 +23,7 @@ export const progressLogs = pgTable('progress_logs', {
     onDelete: 'cascade',
   }),
   user_id: text('user_id').notNull(),
-  type: progressTypeEnum('type').notNull(),
+  challenge_type: progressTypeEnum('challenge_type').notNull(),
   date: timestamp('date', { withTimezone: true }).notNull(),
   created_at: timestamp('created_at', { withTimezone: true })
     .default(sql`TIMEZONE('utc'::text, NOW())`)

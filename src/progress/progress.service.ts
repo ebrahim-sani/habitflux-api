@@ -92,7 +92,7 @@ export class ProgressService {
       .values({
         user_id,
         challenge_id,
-        type: progress.type,
+        challenge_type: progress.challenge_type,
         date: new Date(progress.date),
         data: progress.data,
       })
@@ -110,8 +110,8 @@ export class ProgressService {
     const updateData: any = {};
 
     if (updateProgressDto.progress) {
-      if (updateProgressDto.progress.type) {
-        updateData.type = updateProgressDto.progress.type;
+      if (updateProgressDto.progress.challenge_type) {
+        updateData.type = updateProgressDto.progress.challenge_type;
       }
 
       if (updateProgressDto.progress.date) {
