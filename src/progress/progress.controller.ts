@@ -33,6 +33,15 @@ export class ProgressController {
   }
 
   @UseGuards(JwtGuard)
+  @Get('user/all')
+  async findAllUserProgress(@GetUserId() userId: string) {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+    return this.progressService.findAllUserProgress(userId);
+  }
+
+  @UseGuards(JwtGuard)
   @Get('challenge/:challengeId')
   async findByChallengeId(@Param('challengeId') challengeId: string) {
     if (!challengeId || !isUUID(challengeId)) {

@@ -4,11 +4,11 @@ import { Cache } from 'cache-manager';
 import { eq } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module';
 import { progressLogs } from '../drizzle/schema/progress.schema';
+import { challenges } from '../drizzle/schema/challenge.schema';
 import { DrizzleDB } from '../drizzle/types/drizzle';
 import { CreateProgressDto } from './dto/create-progress.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { isUUID } from 'class-validator';
-import { challenges } from 'src/drizzle/schema/challenge.schema';
 
 @Injectable()
 export class ProgressService {
@@ -16,6 +16,44 @@ export class ProgressService {
     @Inject(DRIZZLE) private db: DrizzleDB,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
+
+  async findAllUserProgress(userId: string) {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+
+    const cacheKey = `user_${userId}_all_progress`;
+    const cachedProgress = await this.cacheManager.get(cacheKey);
+
+    if (cachedProgress) {
+      return cachedProgress;
+    }
+
+    const userChallenges = await this.db
+      .select()
+      .from(challenges)
+      .where(eq(challenges.user_id, userId));
+
+    if (userChallenges.length === 0) {
+      return [];
+    }
+
+    const challengeIds = userChallenges.map((challenge) => challenge.id);
+    const allProgress = [];
+
+    for (const challengeId of challengeIds) {
+      const progressLogsData = await this.db
+        .select()
+        .from(progressLogs)
+        .where(eq(progressLogs.challenge_id, challengeId))
+        .orderBy(progressLogs.date);
+
+      allProgress.push(...progressLogsData);
+    }
+
+    await this.cacheManager.set(cacheKey, allProgress, 60000); // Cache for 1 minute
+    return allProgress;
+  }
 
   async findAll() {
     const cacheKey = 'all_progress_logs';
