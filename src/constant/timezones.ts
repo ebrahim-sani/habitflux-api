@@ -450,5 +450,4 @@ export const allTimezones = [
   'W-SU',
   'WET',
   'Zulu',
-  'localtime',
 ];

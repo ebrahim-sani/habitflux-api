@@ -17,6 +17,5 @@ export const users = pgTable('users', {
 
 export const usersRelations = relations(users, ({ many }) => ({
   challenges: many(challenges),
-  receivedNotifications: many(notifications, { relationName: 'recipient' }),
-  sentNotifications: many(notifications, { relationName: 'sender' }),
+  notifications: many(notifications),
 }));
