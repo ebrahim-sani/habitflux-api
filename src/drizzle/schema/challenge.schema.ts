@@ -27,11 +27,14 @@ export const challenges = pgTable('challenges', {
   created_at: timestamp('created_at', { withTimezone: true })
     .default(sql`TIMEZONE('utc'::text, NOW())`)
     .notNull(),
+  completed: boolean('completed').default(false).notNull(),
 
   // Common fields
   data: jsonb('data')
     .default(sql`'{}'::jsonb`)
     .notNull(),
+  enable_reminders: boolean('enable_reminders').default(true).notNull(),
+  reminder_times: jsonb('reminder_times'),
 
   // Ninety day challenge fields
   habit: text('habit'),
@@ -40,13 +43,11 @@ export const challenges = pgTable('challenges', {
   time_of_day: text('time_of_day'),
   triggers: jsonb('triggers'),
   frequency: integer('frequency'),
-  reminder_times: jsonb('reminder_times'),
 
   // Thirty day challenge fields
   theme: text('theme'),
   custom_theme: text('custom_theme'),
   mini_goals: jsonb('mini_goals'),
-  enable_reminders: boolean('enable_reminders'),
 
   // Replacement challenge fields
   habit_to_quit: text('habit_to_quit'),

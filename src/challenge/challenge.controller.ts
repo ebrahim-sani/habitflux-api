@@ -23,9 +23,15 @@ export class ChallengeController {
 
   @UseGuards(JwtGuard)
   @Get()
-  async findAll(@GetUserId() userId: string) {
+  async findAll(
+    @GetUserId() userId: string,
+    @Query('includeCompleted') includeCompleted?: string,
+  ) {
     if (userId) {
-      return this.challengeService.findByUser(userId);
+      return this.challengeService.findByUser(
+        userId,
+        includeCompleted === 'true',
+      );
     }
     return this.challengeService.findAll();
   }

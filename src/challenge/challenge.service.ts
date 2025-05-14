@@ -1,7 +1,7 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module';
 import { challenges } from '../drizzle/schema/challenge.schema';
 import { DrizzleDB } from '../drizzle/types/drizzle';
@@ -28,19 +28,22 @@ export class ChallengeService {
     return result;
   }
 
-  async findByUser(userId: string) {
-    const cacheKey = `user_${userId}_challenges`;
-    const cachedChallenges = await this.cacheManager.get(cacheKey);
+  async findByUser(userId: string, includeCompleted = false) {
+    const cacheKey = `user_${userId}_challenges${includeCompleted ? '_all' : ''}`;
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) return cached;
 
-    if (cachedChallenges) {
-      return cachedChallenges;
-    }
+    const filters = [
+      eq(challenges.user_id, userId),
+      !includeCompleted ? eq(challenges.completed, false) : undefined,
+    ].filter(Boolean) as Parameters<typeof and>[0][];
 
     const result = await this.db
       .select()
       .from(challenges)
-      .where(eq(challenges.user_id, userId));
-    await this.cacheManager.set(cacheKey, result, 60000); // Cache for 1 minute
+      .where(and(...filters));
+
+    await this.cacheManager.set(cacheKey, result, 60_000);
     return result;
   }
 
@@ -161,6 +164,8 @@ export class ChallengeService {
     if (updateChallengeDto.challenge_type)
       updateData.challenge_type = updateChallengeDto.challenge_type;
     if (updateChallengeDto.data) updateData.data = updateChallengeDto.data;
+    if (updateChallengeDto.completed !== undefined)
+      updateData.completed = updateChallengeDto.completed;
 
     // Add type-specific fields based on the challenge's current type or updated type
     const challengeType =

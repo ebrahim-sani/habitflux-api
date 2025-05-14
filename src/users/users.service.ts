@@ -5,12 +5,14 @@ import { eq } from 'drizzle-orm';
 import { DRIZZLE } from '../drizzle/drizzle.module';
 import { users } from '../drizzle/schema/users.schema';
 import { DrizzleDB } from '../drizzle/types/drizzle';
+import { FcmTopicService } from '../fcm/fcm-topic.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(DRIZZLE) private db: DrizzleDB,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private fcmTopicService: FcmTopicService,
   ) {}
 
   async findAll() {
@@ -45,18 +47,51 @@ export class UsersService {
   async create(data: any, userId: string) {
     const result = await this.db
       .insert(users)
-      .values({ ...data, id: userId })
+      .values({
+        ...data,
+        id: userId,
+        timezone: data.timezone || 'UTC',
+      })
       .returning();
+
+    if (data.fcm_token) {
+      await this.fcmTopicService.subscribeToAllTopics(
+        data.fcm_token,
+        data.timezone || 'UTC',
+      );
+    }
+
     await this.cacheManager.del('all_users');
     return result[0];
   }
 
   async update(id: string, data: any) {
+    const user = (await this.findOne(id)) as {
+      fcm_token?: string;
+      timezone?: string;
+    } | null;
     const result = await this.db
       .update(users)
       .set(data)
       .where(eq(users.id, id))
       .returning();
+
+    if (user && result[0]) {
+      const oldToken = user.fcm_token;
+      const newToken = data.fcm_token;
+      const oldTimezone = user.timezone || 'UTC';
+      const newTimezone = data.timezone || oldTimezone;
+
+      if (newToken && newToken !== oldToken) {
+        await this.fcmTopicService.subscribeToAllTopics(newToken, newTimezone);
+      }
+
+      if (newTimezone !== oldTimezone && oldToken) {
+        await this.fcmTopicService.subscribeToAllTopics(oldToken, oldTimezone);
+        await this.fcmTopicService.subscribeToAllTopics(oldToken, newTimezone);
+      }
+    }
+
     await this.cacheManager.del(`user_${id}`);
     await this.cacheManager.del('all_users');
     return result[0];

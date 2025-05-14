@@ -12,6 +12,7 @@ export const users = pgTable('users', {
     .default(sql`TIMEZONE('utc'::text, NOW())`)
     .notNull(),
   fcm_token: text('fcm_token'),
+  timezone: text('timezone').default('UTC').notNull(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({

@@ -15,6 +15,10 @@ export class UpdateChallengeDto {
   @IsEnum(ChallengeType)
   challenge_type?: ChallengeType;
 
+  @IsOptional()
+  @IsBoolean()
+  completed?: boolean;
+
   // Common optional fields
   @IsOptional()
   @IsObject()

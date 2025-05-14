@@ -8,6 +8,8 @@ import { NotificationModule } from './notification/notification.module';
 import { ConfigModule } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { DrizzleModule } from './drizzle/drizzle.module';
+import { FcmModule } from './fcm/fcm.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { DrizzleModule } from './drizzle/drizzle.module';
     ChallengeModule,
     ProgressModule,
     NotificationModule,
+    FcmModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

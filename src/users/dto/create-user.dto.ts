@@ -12,4 +12,8 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   fcm_token?: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
 }
