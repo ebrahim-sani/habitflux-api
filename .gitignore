@@ -42,6 +42,12 @@ lerna-debug.log*
 .env.production.local
 .env.local
 
+# drizzle
+.drizzle
+
+# firebase
+google-service-account.json
+
 # temp directory
 .temp
 .tmp
