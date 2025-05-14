@@ -11,16 +11,41 @@ import {
 @Injectable()
 export class FcmService implements OnModuleInit {
   onModuleInit() {
-    admin.initializeApp({
-      credential: admin.credential.cert(
-        JSON.parse(
-          readFileSync(
-            join(__dirname, '../config/firebase-service-account.json'),
-            'utf8',
-          ),
+    try {
+      // Try multiple possible paths to find the service account file
+      let serviceAccountPath;
+      const possiblePaths = [
+        join(__dirname, '../config/firebase-service-account.json'),
+        join(__dirname, '../../config/firebase-service-account.json'),
+        join(__dirname, '../../../config/firebase-service-account.json'),
+        join(process.cwd(), 'src/config/firebase-service-account.json'),
+        join(process.cwd(), 'dist/config/firebase-service-account.json'),
+      ];
+
+      for (const path of possiblePaths) {
+        try {
+          readFileSync(path, 'utf8');
+          serviceAccountPath = path;
+          // console.log(`Found Firebase service account at: ${path}`);
+          break;
+        } catch (err) {
+          // Continue to next path
+        }
+      }
+
+      if (!serviceAccountPath) {
+        throw new Error('Firebase service account file not found');
+      }
+
+      admin.initializeApp({
+        credential: admin.credential.cert(
+          JSON.parse(readFileSync(serviceAccountPath, 'utf8')),
         ),
-      ),
-    });
+      });
+    } catch (error) {
+      console.error('Error initializing Firebase Admin SDK:', error);
+      throw error;
+    }
   }
 
   /**
